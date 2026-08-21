@@ -1,0 +1,132 @@
+@import 'tailwindcss';
+
+/*
+  ============================================================
+  DESIGN SYSTEM LAYER — fonts, colors, type scale, shadows
+  ============================================================
+  CityGram brand: Poppins (display) + Inter (body), a hot pink/
+  purple brand core with a signature gold→pink→purple gradient,
+  flat white surfaces, soft card shadows and generous rounded
+  corners. Sourced from the imported Claude Design DS bundle
+  (city-gram-e1db85a6-7a03-43e4-8482-721f1ee32a60).
+*/
+
+@theme {
+  /* ---- Fonts ---- */
+  --font-display: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* ---- Colors: brand core ---- */
+  --color-pink-50: #fdf1f8;
+  --color-pink-100: #fbdcee;
+  --color-pink-300: #f27fc9;
+  --color-pink-500: #d6009c;
+  --color-pink-600: #b4007f;
+  --color-pink-700: #8f0066;
+  --color-purple-500: #9d0099;
+  --color-purple-600: #890084;
+  --color-purple-700: #6b0865;
+  --color-purple-900: #450a45;
+  --color-gold-300: #ffe08a;
+  --color-gold-400: #fed966;
+  --color-gold-500: #f8c93f;
+
+  /* ---- Colors: neutrals ---- */
+  --color-ink-900: #12111a;
+  --color-ink-800: #1f1e29;
+  --color-ink-600: #4a4855;
+  --color-ink-400: #7b7886;
+  --color-ink-200: #c9c6d1;
+  --color-ink-100: #e7e5ec;
+  --color-ink-50: #f5f4f8;
+
+  /* ---- Colors: semantic aliases (only for genuinely reused brand vocabulary) ---- */
+  --color-brand-primary: var(--color-pink-500);
+  --color-brand-primary-press: var(--color-pink-600);
+  --color-brand-secondary: var(--color-purple-500);
+
+  /* ---- Type scale ---- */
+  --text-display-xl: 2.5rem; /* 40px */
+  --text-display-xl--line-height: 1.15;
+  --text-display-lg: 1.75rem; /* 28px */
+  --text-display-lg--line-height: 1.2;
+  --text-display-md: 1.375rem; /* 22px */
+  --text-display-md--line-height: 1.25;
+  --text-title: 1.125rem; /* 18px */
+  --text-title--line-height: 1.3;
+  --text-body-lg: 1.0625rem; /* 17px */
+  --text-body-lg--line-height: 1.5;
+  --text-body: 0.9375rem; /* 15px */
+  --text-body--line-height: 1.5;
+  --text-body-sm: 0.8125rem; /* 13px */
+  --text-body-sm--line-height: 1.4;
+  --text-caption: 0.75rem; /* 12px */
+  --text-caption--line-height: 1.3;
+  --text-price: 1.375rem; /* 22px */
+  --text-price--line-height: 1.2;
+  --text-button: 0.9375rem; /* 15px */
+  --text-button--line-height: 1;
+
+  /* ---- Radius ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* ---- Shadows (soft, low-contrast) ---- */
+  --shadow-card: 0 2px 8px rgba(18, 17, 26, 0.08);
+  --shadow-elevated: 0 8px 24px rgba(18, 17, 26, 0.14);
+  --shadow-modal: 0 16px 48px rgba(18, 17, 26, 0.22);
+}
+
+/* Signature CityGram gradient — not a theme color (gradients can't be Tailwind
+   color tokens), exposed as a plain custom property + one utility class. */
+:root {
+  --gradient-brand: linear-gradient(
+    90deg,
+    var(--color-gold-400) 0%,
+    var(--color-pink-500) 52%,
+    var(--color-purple-500) 100%
+  );
+}
+
+@utility bg-gradient-brand {
+  background: var(--gradient-brand);
+}
+
+/* ============================================================
+   BASE LAYER — canvas, ink defaults, links, focus
+   ============================================================ */
+html,
+body {
+  @apply bg-white text-ink-900 font-body antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  @apply font-display font-bold text-ink-900;
+}
+
+a {
+  @apply text-purple-600 no-underline;
+}
+a:hover {
+  @apply text-pink-600 underline;
+}
+
+/* Focus ring — always visible, never removed */
+:focus-visible {
+  outline: 3px solid var(--color-pink-500);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
