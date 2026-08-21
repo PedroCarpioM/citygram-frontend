@@ -12,7 +12,7 @@ const variantStyles: Record<
   { base: string; active: string; inactive: string }
 > = {
   solid: {
-    base: 'rounded-md px-4.5 py-3 text-body font-bold',
+    base: 'rounded-md px-2 py-2.5 text-body-sm font-bold text-center leading-tight',
     active: 'border-2 border-transparent bg-pink-500 text-white',
     inactive: 'border-2 border-ink-200 bg-white text-ink-900',
   },
@@ -25,11 +25,14 @@ const variantStyles: Record<
 
 export function SegmentedTabs({ options, value, onChange, variant = 'solid' }: SegmentedTabsProps) {
   const styles = variantStyles[variant]
-  const containerClasses =
-    variant === 'pill' ? 'flex flex-wrap gap-2.5' : 'flex gap-2.5 overflow-x-auto'
+  const containerClasses = variant === 'pill' ? 'flex flex-wrap gap-2.5' : 'grid gap-2'
+  const containerStyle =
+    variant === 'pill'
+      ? undefined
+      : { gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }
 
   return (
-    <div className={containerClasses} role="group">
+    <div className={containerClasses} style={containerStyle} role="group">
       {options.map((option) => {
         const active = option === value
         return (
@@ -38,7 +41,7 @@ export function SegmentedTabs({ options, value, onChange, variant = 'solid' }: S
             type="button"
             onClick={() => onChange(option)}
             aria-pressed={active}
-            className={`shrink-0 transition duration-fast active:scale-[0.97] ${styles.base} ${
+            className={`transition duration-fast active:scale-[0.97] ${variant === 'pill' ? 'shrink-0' : ''} ${styles.base} ${
               active ? styles.active : styles.inactive
             }`}
           >

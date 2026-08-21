@@ -137,3 +137,22 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================
+   VENDOR OVERRIDES — Leaflet popup chrome
+   ============================================================
+   Strip Leaflet's default popup padding/shadow/radius so the
+   PropertyCard rendered inside owns the only visible chrome.
+*/
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+.leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+}
+.leaflet-popup-tip {
+  box-shadow: none;
+}
