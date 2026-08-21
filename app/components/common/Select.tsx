@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react'
+import { useState } from 'react'
 
 interface SelectProps {
   label: string
@@ -9,6 +10,8 @@ interface SelectProps {
 }
 
 export function Select({ label, value, options, onChange, gradientLabel = false }: SelectProps) {
+  const [focused, setFocused] = useState(false)
+
   return (
     <label className="flex flex-col gap-1.5">
       <span
@@ -20,7 +23,9 @@ export function Select({ label, value, options, onChange, gradientLabel = false 
         <select
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full appearance-none rounded-md bg-white py-3.5 pr-9 pl-4 text-base text-ink-900"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          className="w-full appearance-none rounded-md bg-white py-3.5 pr-9 pl-4 text-base text-ink-900 transition-colors duration-fast hover:bg-ink-50"
         >
           {options.map((option) => (
             <option key={option} value={option}>
@@ -31,7 +36,9 @@ export function Select({ label, value, options, onChange, gradientLabel = false 
         <ChevronDown
           aria-hidden
           size={16}
-          className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-ink-600"
+          className={`pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-ink-600 transition-transform duration-base ${
+            focused ? 'rotate-180' : 'rotate-0'
+          }`}
         />
       </div>
     </label>

@@ -76,6 +76,10 @@
   --shadow-card: 0 2px 8px rgba(18, 17, 26, 0.08);
   --shadow-elevated: 0 8px 24px rgba(18, 17, 26, 0.14);
   --shadow-modal: 0 16px 48px rgba(18, 17, 26, 0.22);
+
+  /* ---- Motion ---- */
+  --duration-fast: 150ms; /* press/hover feedback on controls */
+  --duration-base: 220ms; /* panel/menu open-close, elevation changes */
 }
 
 /* Signature CityGram gradient — not a theme color (gradients can't be Tailwind
@@ -96,29 +100,32 @@
 /* ============================================================
    BASE LAYER — canvas, ink defaults, links, focus
    ============================================================ */
-html,
-body {
-  @apply bg-white text-ink-900 font-body antialiased;
-}
+@layer base {
+  html,
+  body {
+    @apply bg-white text-ink-900 font-body antialiased;
+    overflow-x: hidden;
+  }
 
-h1,
-h2,
-h3,
-h4 {
-  @apply font-display font-bold text-ink-900;
-}
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-bold text-ink-900;
+  }
 
-a {
-  @apply text-purple-600 no-underline;
-}
-a:hover {
-  @apply text-pink-600 underline;
-}
+  a {
+    @apply text-purple-600 no-underline;
+  }
+  a:hover {
+    @apply text-pink-600 underline;
+  }
 
-/* Focus ring — always visible, never removed */
-:focus-visible {
-  outline: 3px solid var(--color-pink-500);
-  outline-offset: 2px;
+  /* Focus ring — always visible, never removed */
+  :focus-visible {
+    outline: 3px solid var(--color-pink-500);
+    outline-offset: 2px;
+  }
 }
 
 /* Reduced motion */

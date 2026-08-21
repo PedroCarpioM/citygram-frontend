@@ -31,7 +31,7 @@ export function Footer() {
       <div className="mx-auto max-w-[1180px]">
         <img src="/images/brand/isologo.jpg" alt="CityGram" className="mb-8 h-8.5" />
 
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(160px,100%),1fr))] gap-8">
           {FOOTER_COLUMNS.map((column) => (
             <div key={column.title} className="flex flex-col gap-2.5">
               <div className="text-body font-bold text-ink-900">{column.title}</div>
@@ -46,12 +46,18 @@ export function Footer() {
           <div className="flex flex-col gap-3">
             <div className="text-body font-bold text-ink-900">En tu móvil</div>
             <div className="flex flex-col gap-2">
-              <span className="w-fit rounded-md border-2 border-ink-200 px-3.5 py-2 text-body-sm font-semibold text-ink-900">
+              <a
+                href="#"
+                className="w-fit rounded-md border-2 border-ink-200 px-3.5 py-2 text-body-sm font-semibold text-ink-900 transition-colors duration-fast hover:border-pink-500 hover:text-pink-600 hover:no-underline"
+              >
                 App Store
-              </span>
-              <span className="w-fit rounded-md border-2 border-ink-200 px-3.5 py-2 text-body-sm font-semibold text-ink-900">
+              </a>
+              <a
+                href="#"
+                className="w-fit rounded-md border-2 border-ink-200 px-3.5 py-2 text-body-sm font-semibold text-ink-900 transition-colors duration-fast hover:border-pink-500 hover:text-pink-600 hover:no-underline"
+              >
                 Google Play
-              </span>
+              </a>
             </div>
             <div className="flex gap-2.5">
               {SOCIAL_LINKS.map((social) => (
@@ -59,7 +65,7 @@ export function Footer() {
                   key={social.label}
                   href="#"
                   aria-label={social.label}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-200 text-caption font-semibold text-ink-900 hover:no-underline"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-200 text-caption font-semibold text-ink-900 transition-colors duration-fast hover:bg-pink-500 hover:text-white hover:no-underline"
                 >
                   {social.glyph}
                 </a>

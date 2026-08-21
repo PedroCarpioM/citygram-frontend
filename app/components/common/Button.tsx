@@ -1,3 +1,4 @@
+import { Loader2 } from 'lucide-react'
 import type { ButtonHTMLAttributes } from 'react'
 
 type ButtonVariant = 'primary' | 'gradient' | 'purple' | 'outline' | 'ghost'
@@ -6,6 +7,7 @@ type ButtonSize = 'sm' | 'md' | 'lg'
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   size?: ButtonSize
+  isLoading?: boolean
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -25,13 +27,21 @@ const sizeClasses: Record<ButtonSize, string> = {
 export function Button({
   variant = 'primary',
   size = 'md',
+  isLoading = false,
+  disabled,
   className = '',
+  children,
   ...props
 }: ButtonProps) {
   return (
     <button
       {...props}
-      className={`inline-flex items-center justify-center gap-2 rounded-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
-    />
+      disabled={disabled || isLoading}
+      aria-busy={isLoading}
+      className={`inline-flex items-center justify-center gap-2 rounded-md font-semibold transition duration-fast active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+    >
+      {isLoading && <Loader2 aria-hidden size={16} className="animate-spin" />}
+      {children}
+    </button>
   )
 }
