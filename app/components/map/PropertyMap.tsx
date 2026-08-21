@@ -5,7 +5,7 @@ import { PropertyCard } from '~/components/property/PropertyCard'
 import { MapPin } from './MapPin'
 
 export interface MapPinData {
-  id: number
+  id: string
   lat: number
   lng: number
   zone: string
@@ -13,8 +13,8 @@ export interface MapPinData {
   priceNum: number
   beds: number
   baths: number
-  garages: number
-  area: number
+  garages?: number
+  area?: number
   image: string
   size: 'sm' | 'md'
 }
@@ -95,8 +95,7 @@ export default function PropertyMap({ pins, center, zoom }: PropertyMapProps) {
               <PropertyCard
                 image={pin.image}
                 zone={pin.zone}
-                price={pin.priceNum.toLocaleString('es-BO')}
-                currency="Sus"
+                price={pin.price}
                 beds={pin.beds}
                 baths={pin.baths}
                 garages={pin.garages}

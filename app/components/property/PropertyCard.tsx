@@ -11,8 +11,8 @@ interface PropertyCardProps {
   currency?: string
   beds: number
   baths: number
-  garages: number
-  area: number
+  garages?: number
+  area?: number
   ctaLabel?: string
   onFavorite?: () => void
   favorited?: boolean
@@ -83,9 +83,13 @@ export function PropertyCard({
         <div className="flex gap-3.5">
           <StatInline icon={featureIcons.beds} value={beds} />
           <StatInline icon={featureIcons.baths} value={baths} />
-          <StatInline icon={featureIcons.garages} value={garages} />
+          {garages !== undefined ? (
+            <StatInline icon={featureIcons.garages} value={garages} />
+          ) : null}
         </div>
-        <div className="text-body-sm text-ink-600">Sup. {area} m²</div>
+        {area !== undefined ? (
+          <div className="text-body-sm text-ink-600">Sup. {area} m²</div>
+        ) : null}
         <button
           type="button"
           className="self-start rounded-md bg-brand-primary px-5 py-2.5 text-sm font-bold text-white"

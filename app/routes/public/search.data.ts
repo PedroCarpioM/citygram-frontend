@@ -23,7 +23,7 @@ function formatPrice(amount: number) {
 
 export const pinData: MapPinData[] = [
   {
-    id: 1,
+    id: '1',
     lat: -17.3762,
     lng: -66.152,
     zone: 'Cala Cala',
@@ -37,7 +37,7 @@ export const pinData: MapPinData[] = [
     area: 280,
   },
   {
-    id: 2,
+    id: '2',
     lat: -17.3935,
     lng: -66.142,
     zone: 'Av. Aroma',
@@ -51,7 +51,7 @@ export const pinData: MapPinData[] = [
     area: 350,
   },
   {
-    id: 3,
+    id: '3',
     lat: -17.383,
     lng: -66.165,
     zone: 'Monseñor Rivero',
@@ -65,7 +65,7 @@ export const pinData: MapPinData[] = [
     area: 340,
   },
   {
-    id: 4,
+    id: '4',
     lat: -17.365,
     lng: -66.155,
     zone: 'Zona Norte',
