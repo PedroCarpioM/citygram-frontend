@@ -1,12 +1,16 @@
 import leafletCss from 'leaflet/dist/leaflet.css?url'
-import { lazy, Suspense, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router'
+import { toast } from 'sonner'
 import { Button } from '~/components/common/Button'
 import { SegmentedTabs } from '~/components/common/SegmentedTabs'
 import { Select } from '~/components/common/Select'
+import type { MapPinData } from '~/components/map/PropertyMap'
 import { PropertyMapSkeleton } from '~/components/map/PropertyMapSkeleton'
 import { PropertyCard } from '~/components/property/PropertyCard'
 import { PropertyTypeTile, type PropertyTypeKey } from '~/components/property/PropertyTypeTile'
+import { usePublicListings } from '~/hooks/useListings'
+import { mapPublicListing, matchesOperation, parsePrice } from '~/utils/listing'
 import {
   COCHABAMBA_CENTER,
   listingData,
@@ -55,7 +59,62 @@ export default function Search() {
   const [priceMax, setPriceMax] = useState(priceMaxOptions[0])
   const mounted = useMounted()
 
-  const resultsCountLabel = `${listingData.length} anuncios en ${operation.toLowerCase()}`
+  const listingsQuery = usePublicListings()
+
+  useEffect(() => {
+    if (listingsQuery.isError) {
+      toast.error('No se pudo conectar con el servidor. Mostrando propiedades de ejemplo.')
+    }
+  }, [listingsQuery.isError])
+
+  const mappedListings = useMemo(
+    () => (listingsQuery.data ?? []).map(mapPublicListing),
+    [listingsQuery.data],
+  )
+
+  const priceMinValue = useMemo(() => parsePrice(priceMin), [priceMin])
+  const priceMaxValue = useMemo(() => parsePrice(priceMax), [priceMax])
+
+  const filteredListings = useMemo(
+    () =>
+      mappedListings.filter((item) => {
+        if (!matchesOperation(item.operationType, operation)) return false
+        if (priceMinValue !== null && (item.priceValue === null || item.priceValue < priceMinValue))
+          return false
+        if (priceMaxValue !== null && (item.priceValue === null || item.priceValue > priceMaxValue))
+          return false
+        return true
+      }),
+    [mappedListings, operation, priceMinValue, priceMaxValue],
+  )
+
+  const pins: MapPinData[] = listingsQuery.isError
+    ? pinData
+    : filteredListings.map((item) => ({
+        id: item.id,
+        lat: item.lat,
+        lng: item.lng,
+        zone: item.zone,
+        price: item.price,
+        priceNum: item.priceValue ?? 0,
+        beds: item.beds,
+        baths: item.baths,
+        image: item.image,
+        size: 'md',
+      }))
+
+  const listItems = listingsQuery.isError
+    ? listingData.map((item, index) => ({ id: `mock-${index}`, ...item }))
+    : filteredListings.map((item) => ({
+        id: item.id,
+        image: item.image,
+        zone: item.zone,
+        price: item.price,
+        beds: item.beds,
+        baths: item.baths,
+      }))
+
+  const resultsCountLabel = `${listItems.length} anuncios en ${operation.toLowerCase()}`
 
   const propertyTypeTiles = propertyTypeData.map((pt) => (
     <PropertyTypeTile
@@ -120,6 +179,7 @@ export default function Search() {
               value={priceMin}
               options={priceMinOptions}
               onChange={setPriceMin}
+              disabled={listingsQuery.isLoading}
             />
           </div>
           <div className="flex-1">
@@ -128,6 +188,7 @@ export default function Search() {
               value={priceMax}
               options={priceMaxOptions}
               onChange={setPriceMax}
+              disabled={listingsQuery.isLoading}
             />
           </div>
         </div>
@@ -156,9 +217,9 @@ export default function Search() {
               </div>
             </div>
 
-            {mounted ? (
+            {mounted && !listingsQuery.isLoading ? (
               <Suspense fallback={<PropertyMapSkeleton />}>
-                <PropertyMap pins={pinData} center={COCHABAMBA_CENTER} zoom={14} />
+                <PropertyMap pins={pins} center={COCHABAMBA_CENTER} zoom={14} />
               </Suspense>
             ) : (
               <PropertyMapSkeleton />
@@ -168,8 +229,8 @@ export default function Search() {
           <div className="h-full overflow-y-auto bg-ink-50 p-4 lg:p-6">
             <div className="mb-4 text-sm font-semibold text-ink-600">{resultsCountLabel}</div>
             <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] lg:gap-5">
-              {listingData.map((item) => (
-                <PropertyCard key={item.zone} {...item} />
+              {listItems.map(({ id, ...item }) => (
+                <PropertyCard key={id} {...item} />
               ))}
             </div>
           </div>
