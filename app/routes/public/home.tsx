@@ -1,5 +1,6 @@
 import { ImagePlus, QrCode, Smartphone } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 import type { Route } from './+types/home'
 import { Button } from '~/components/common/Button'
@@ -7,6 +8,8 @@ import { Footer } from '~/components/common/Footer'
 import { Navbar } from '~/components/common/Navbar'
 import { SegmentedTabs } from '~/components/common/SegmentedTabs'
 import { Select } from '~/components/common/Select'
+import { useCities } from '~/hooks/useCities'
+import { useNeighborhoods } from '~/hooks/useNeighborhoods'
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -19,8 +22,8 @@ export function meta({}: Route.MetaArgs) {
 }
 
 const OPERATION_OPTIONS = ['Venta', 'Alquiler', 'Anticrético']
-const CITY_OPTIONS = ['La Paz', 'Cochabamba', 'Santa Cruz', 'Sucre']
-const ZONA_OPTIONS = ['Cala-Cala', 'Equipetrol', 'Sopocachi']
+const FALLBACK_CITY_OPTIONS = ['La Paz', 'Cochabamba', 'Santa Cruz', 'Sucre']
+const FALLBACK_ZONA_OPTIONS = ['Cala-Cala', 'Equipetrol', 'Sopocachi']
 const NEWS_TABS = ['Destacadas', 'Inmobiliario', 'Finanzas', 'Vacacional', 'Deco']
 
 const NEWS_ITEMS = [
@@ -82,8 +85,62 @@ function Hero() {
 
 function SearchPanel() {
   const [operation, setOperation] = useState(OPERATION_OPTIONS[1])
-  const [ciudad, setCiudad] = useState(CITY_OPTIONS[1])
-  const [zona, setZona] = useState(ZONA_OPTIONS[0])
+  const [ciudad, setCiudad] = useState(FALLBACK_CITY_OPTIONS[1])
+  const [zona, setZona] = useState(FALLBACK_ZONA_OPTIONS[0])
+
+  const citiesQuery = useCities()
+  const neighborhoodsQuery = useNeighborhoods()
+
+  const cityOptions = useMemo(
+    () =>
+      citiesQuery.isError
+        ? FALLBACK_CITY_OPTIONS
+        : (citiesQuery.data ?? [])
+            .map((city) => city.name)
+            .filter((name): name is string => Boolean(name)),
+    [citiesQuery.data, citiesQuery.isError],
+  )
+
+  const zonaOptions = useMemo(
+    () =>
+      neighborhoodsQuery.isError
+        ? FALLBACK_ZONA_OPTIONS
+        : (neighborhoodsQuery.data ?? [])
+            .filter((neighborhood) => neighborhood.cityName === ciudad)
+            .map((neighborhood) => neighborhood.name)
+            .filter((name): name is string => Boolean(name)),
+    [neighborhoodsQuery.data, neighborhoodsQuery.isError, ciudad],
+  )
+
+  useEffect(() => {
+    if (citiesQuery.isError) {
+      toast.error('No se pudo conectar con el servidor. Mostrando ciudades de ejemplo.')
+    }
+  }, [citiesQuery.isError])
+
+  useEffect(() => {
+    if (neighborhoodsQuery.isError) {
+      toast.error('No se pudo conectar con el servidor. Mostrando zonas de ejemplo.')
+    }
+  }, [neighborhoodsQuery.isError])
+
+  // Adjusting state during render (not in an effect) keeps a stale selection from
+  // ever painting when the options list changes — see https://react.dev/learn/you-might-not-need-an-effect
+  const [prevCityOptions, setPrevCityOptions] = useState(cityOptions)
+  if (cityOptions !== prevCityOptions) {
+    setPrevCityOptions(cityOptions)
+    if (cityOptions.length > 0 && !cityOptions.includes(ciudad)) {
+      setCiudad(cityOptions[0])
+    }
+  }
+
+  const [prevZonaOptions, setPrevZonaOptions] = useState(zonaOptions)
+  if (zonaOptions !== prevZonaOptions) {
+    setPrevZonaOptions(zonaOptions)
+    if (zonaOptions.length > 0 && !zonaOptions.includes(zona)) {
+      setZona(zonaOptions[0])
+    }
+  }
 
   return (
     <div className="relative z-[2] mx-auto mt-5 flex max-w-[1180px] flex-col gap-5 px-6 sm:-mt-18 sm:gap-0">
@@ -102,8 +159,9 @@ function SearchPanel() {
               <Select
                 label="Ciudad"
                 value={ciudad}
-                options={CITY_OPTIONS}
+                options={cityOptions}
                 onChange={setCiudad}
+                disabled={citiesQuery.isLoading}
                 gradientLabel
               />
             </div>
@@ -111,8 +169,9 @@ function SearchPanel() {
               <Select
                 label="Zona"
                 value={zona}
-                options={ZONA_OPTIONS}
+                options={zonaOptions}
                 onChange={setZona}
+                disabled={neighborhoodsQuery.isLoading}
                 gradientLabel
               />
             </div>

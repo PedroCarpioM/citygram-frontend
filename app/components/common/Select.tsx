@@ -7,9 +7,17 @@ interface SelectProps {
   options: string[]
   onChange: (value: string) => void
   gradientLabel?: boolean
+  disabled?: boolean
 }
 
-export function Select({ label, value, options, onChange, gradientLabel = false }: SelectProps) {
+export function Select({
+  label,
+  value,
+  options,
+  onChange,
+  gradientLabel = false,
+  disabled = false,
+}: SelectProps) {
   const [focused, setFocused] = useState(false)
 
   return (
@@ -25,7 +33,8 @@ export function Select({ label, value, options, onChange, gradientLabel = false 
           onChange={(event) => onChange(event.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className="w-full appearance-none rounded-md bg-white py-3.5 pr-9 pl-4 text-base text-ink-900 transition-colors duration-fast hover:bg-ink-50"
+          disabled={disabled}
+          className="w-full appearance-none rounded-md bg-white py-3.5 pr-9 pl-4 text-base text-ink-900 transition-colors duration-fast hover:bg-ink-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {options.map((option) => (
             <option key={option} value={option}>
