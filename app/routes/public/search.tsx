@@ -13,9 +13,8 @@ import { usePublicListings } from '~/hooks/useListings'
 import { mapPublicListing, matchesOperation, parsePrice } from '~/utils/listing'
 import {
   COCHABAMBA_CENTER,
-  listingData,
+  mockListings,
   operationOptions,
-  pinData,
   priceMaxOptions,
   priceMinOptions,
   propertyTypeData,
@@ -72,12 +71,16 @@ export default function Search() {
     [listingsQuery.data],
   )
 
+  // On error, filter the same mock dataset instead of bypassing filtering —
+  // keeps tab/price interactions meaningful in the offline/demo fallback too.
+  const sourceListings = listingsQuery.isError ? mockListings : mappedListings
+
   const priceMinValue = useMemo(() => parsePrice(priceMin), [priceMin])
   const priceMaxValue = useMemo(() => parsePrice(priceMax), [priceMax])
 
   const filteredListings = useMemo(
     () =>
-      mappedListings.filter((item) => {
+      sourceListings.filter((item) => {
         if (!matchesOperation(item.operationType, operation)) return false
         if (priceMinValue !== null && (item.priceValue === null || item.priceValue < priceMinValue))
           return false
@@ -85,34 +88,34 @@ export default function Search() {
           return false
         return true
       }),
-    [mappedListings, operation, priceMinValue, priceMaxValue],
+    [sourceListings, operation, priceMinValue, priceMaxValue],
   )
 
-  const pins: MapPinData[] = listingsQuery.isError
-    ? pinData
-    : filteredListings.map((item) => ({
-        id: item.id,
-        lat: item.lat,
-        lng: item.lng,
-        zone: item.zone,
-        price: item.price,
-        priceNum: item.priceValue ?? 0,
-        beds: item.beds,
-        baths: item.baths,
-        image: item.image,
-        size: 'md',
-      }))
+  const pins: MapPinData[] = filteredListings.map((item) => ({
+    id: item.id,
+    lat: item.lat,
+    lng: item.lng,
+    zone: item.zone,
+    price: item.price,
+    priceNum: item.priceValue ?? 0,
+    beds: item.beds,
+    baths: item.baths,
+    garages: item.garages,
+    area: item.area,
+    image: item.image,
+    size: item.size ?? 'md',
+  }))
 
-  const listItems = listingsQuery.isError
-    ? listingData.map((item, index) => ({ id: `mock-${index}`, ...item }))
-    : filteredListings.map((item) => ({
-        id: item.id,
-        image: item.image,
-        zone: item.zone,
-        price: item.price,
-        beds: item.beds,
-        baths: item.baths,
-      }))
+  const listItems = filteredListings.map((item) => ({
+    id: item.id,
+    image: item.image,
+    zone: item.zone,
+    price: item.price,
+    beds: item.beds,
+    baths: item.baths,
+    garages: item.garages,
+    area: item.area,
+  }))
 
   const resultsCountLabel = `${listItems.length} anuncios en ${operation.toLowerCase()}`
 

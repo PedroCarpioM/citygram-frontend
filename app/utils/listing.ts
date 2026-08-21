@@ -11,6 +11,9 @@ export interface PropertyListing {
   operationType: string | null
   beds: number
   baths: number
+  garages?: number
+  area?: number
+  size?: 'sm' | 'md'
 }
 
 const PLACEHOLDER_IMAGE = '/images/properties/property-photo-1.jpg'

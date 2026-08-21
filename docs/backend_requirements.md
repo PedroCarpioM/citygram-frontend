@@ -98,13 +98,14 @@ attempted here.
 
 ## 9. Fallback/demo-mode messaging is MVP-only, not a final pattern
 
-When `allListingsForPublic` fails, the app falls back to the hardcoded mock
-arrays in `search.data.ts` and shows a generic Spanish toast ("No se pudo
-conectar con el servidor. Mostrando propiedades de ejemplo."). Verified
-manually: the fallback dataset is not run through the operation/price
-filters, so it always shows all mock entries regardless of the selected
-tab/price range — acceptable for an offline demo, but worth knowing before
-mistaking it for a filtering bug. This tolerance for a placeholder message
-and unfiltered fallback is intentional for this MVP iteration only — a
-production fallback experience (e.g. distinguishing "no results match your
-filters" from "backend unreachable") is not designed here.
+When `allListingsForPublic` fails, the app falls back to a mock dataset
+(`mockListings` in `search.data.ts`, shaped like `PropertyListing`) and shows
+a generic Spanish toast ("No se pudo conectar con el servidor. Mostrando
+propiedades de ejemplo."). The mock dataset runs through the exact same
+operation/price filtering pipeline as real data (verified manually: tab
+switches and price-range selects both narrow the fallback results
+correctly), so the offline/demo experience behaves consistently with the
+live one. What's still MVP-only, not a final pattern: the placeholder toast
+message itself, and the fact that a production fallback experience (e.g.
+distinguishing "no results match your filters" from "backend unreachable")
+isn't designed here.
