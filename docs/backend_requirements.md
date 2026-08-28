@@ -21,6 +21,9 @@ Tracks the status of gaps between `/buscar`'s map + listing behavior and the API
   in one request).
 - **Auth**: `allListingsForPublic` confirmed unauthenticated.
 - **Map viewport/bbox search**: confirmed out of scope — city-based search is sufficient.
+- **Shareable filter state**: operation and property-type filters are now reflected in
+  `/buscar`'s URL (`?operacion=venta&tipo=vivienda`) via `useSearchParams`, so filtered
+  views are linkable/bookmarkable.
 
 ## Still open
 
@@ -31,7 +34,8 @@ Tracks the status of gaps between `/buscar`'s map + listing behavior and the API
 2. **`price` field format** — the example payload shared had `"price": 500.023,00,`, which
    isn't valid JSON (stray comma, mixed thousands/decimal separators). We're treating
    `price` as a plain `number` per the field table. Worth double-checking against an actual
-   response.
+   response. The price min/max filter on `/buscar` is hidden from the UI (not just disabled)
+   until this is confirmed — see the TODO in `search.data.ts`/`search.tsx`.
 3. **`propertyType` values beyond `"Casa"`** — assumed to match the existing Spanish tile
    labels exactly (Departamento/Terreno/Local/Oficina/Hotel), not yet confirmed.
 4. **No `area`/built-area field** on `PublicListingDTO` — still only on
