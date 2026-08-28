@@ -10,7 +10,12 @@ import { PropertyMapSkeleton } from '~/components/map/PropertyMapSkeleton'
 import { PropertyCard } from '~/components/property/PropertyCard'
 import { PropertyTypeTile, type PropertyTypeKey } from '~/components/property/PropertyTypeTile'
 import { usePublicListings } from '~/hooks/useListings'
-import { mapPublicListing, matchesOperation, matchesPropertyType } from '~/utils/listing'
+import {
+  mapPublicListing,
+  matchesOperation,
+  matchesPropertyType,
+  propertyTypeKeyFromLabel,
+} from '~/utils/listing'
 import {
   COCHABAMBA_CENTER,
   mockListings,
@@ -150,6 +155,7 @@ export default function Search() {
     currency: item.currency,
     image: item.image,
     size: item.size ?? 'md',
+    type: propertyTypeKeyFromLabel(item.propertyType),
   }))
 
   const listItems = filteredListings.map((item) => ({
