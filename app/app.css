@@ -101,10 +101,12 @@
    BASE LAYER — canvas, ink defaults, links, focus
    ============================================================ */
 @layer base {
-  html,
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-white text-ink-900 font-body antialiased;
-    overflow-x: hidden;
   }
 
   h1,

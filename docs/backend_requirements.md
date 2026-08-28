@@ -1,10 +1,10 @@
-# Backend requirements — public search (`/buscar`)
+# Backend requirements — public listings (`/buscar`, `/propiedades/:id`)
 
-Tracks the status of gaps between `/buscar`'s map + listing behavior and the API
+Tracks the status of gaps between the public search/listing-detail screens and the API
 (`docs/API.md`, `docs/SCHEMA.md`). Complements the untracked scratch notes in
 `docs/map_behaviour.md`.
 
-## Resolved
+## `/buscar` — Resolved
 
 - **Property-type filtering**: `PublicListingDTO` now has `propertyType`. Wired in
   `app/utils/listing.ts` (`matchesPropertyType`) and `search.tsx` (property-type tiles now
@@ -25,7 +25,7 @@ Tracks the status of gaps between `/buscar`'s map + listing behavior and the API
   `/buscar`'s URL (`?operacion=venta&tipo=vivienda`) via `useSearchParams`, so filtered
   views are linkable/bookmarkable.
 
-## Still open
+## `/buscar` — Still open
 
 1. **`listingType` values beyond `"Sale"`** — only `"Sale"` was confirmed against a real
    response. We assumed `"Rent"` → Alquiler and `"Anticretico"` → Anticrético
@@ -45,3 +45,48 @@ Tracks the status of gaps between `/buscar`'s map + listing behavior and the API
    `price` field, and its `ListingType`/`Currency`/`AreaUnit`/`SortBy` query params are
    still undocumented raw-int enums (see `docs/SCHEMA.md` "Enums — TBD"). Revisit if/when
    backend documents those and it becomes the server-side filter/pagination answer.
+
+## `/propiedades/:id` — Still open
+
+UI phase only (`feat/public-listing-detail`): built against a local mock dataset shaped
+like `DetailedPublicListingDTO` (`app/routes/public/listing-detail.data.ts`), no real fetch
+by id yet. The gaps below need resolving before wiring this route to
+`GET /api/Listings/listingByIdForPublic{id}`.
+
+1. **No `currency` field on `DetailedPublicListingDTO`** — unlike `PublicListingDTO`, the
+   detail DTO has no currency. The mock dataset adds one locally (`MockListingDetail`) since
+   TypeScript's excess-property check won't allow it on the real DTO type. When wired for
+   real: either the endpoint needs to gain the field, or the detail page needs to carry the
+   currency over via `location.state` from whichever `/buscar` card was clicked — which
+   breaks for a listing opened via a direct/shared link with no prior navigation state.
+2. **No neighborhood/zone field** on `DetailedPublicListingDTO` (nor `PublicListingDTO`) —
+   same gap as `/buscar`'s cards. The design's "Zona {x}" header and the "Seguir buscando en
+   {zona}" CTA both approximate zone from `propertyAddress`/`city` via the new
+   `pickZone()` helper in `app/utils/listing.ts` (shared with `mapPublicListing`), not a
+   real neighborhood value. `NeighborhoodDTO`/`Properties.neighborhood` exist elsewhere in
+   the schema but aren't exposed on either public listing DTO.
+3. **No floor-plan or 360°-tour field** anywhere in the Property/Listing schema — the
+   source design (`Publicacion.dc.html`) had "Plano" and "360°" info chips; both are omitted
+   from this iteration rather than shipped as dead UI. Revisit if that becomes an actual
+   feature request.
+4. **No favorites/wishlist endpoint** in the API at all — the heart/favorite toggle on this
+   page is local component state only, not persisted, and resets on reload/navigation.
+5. **No contact/inquiry endpoint** — the "Contactar" button has nothing to call yet
+   (decorative for this iteration). Only the phone-reveal interaction is functional, since
+   `contactPhone` is already plain data on the DTO.
+6. **`type`/`propertyCondition`/`billingPeriod` on `DetailedPublicListingDTO`** — same
+   TBD-enum-value concern as the rest of the schema (`docs/SCHEMA.md` "Enums — TBD"). `type`
+   reuses the already-established `listingTypeLabel()` mapping since it's the same
+   Sale/Rent/Anticretico domain as `PublicListingDTO.listingType`; `propertyCondition` and
+   `billingPeriod` are rendered as plain pass-through text, not mapped to guessed labels.
+7. **`listingByIdForPublic{id}` path oddity** — already flagged in `docs/API.md` (literal
+   path, no `/` before `{id}` in the spec). Confirm the real request shape with backend
+   before wiring the loader.
+8. **Prev/next navigation ("4 de 14", "Siguiente inmueble")** has no backend-provided
+   ordering — implemented as client-only `location.state` (`{ ids, index }`) passed from the
+   `/buscar` card/pin that was clicked (`search.tsx`, `PropertyMap.tsx`). A listing opened
+   directly (shared link, no state) simply hides that control instead of guessing an order.
+9. **"Seguir buscando en {zona}" CTA links to `/buscar` without a working zone filter** —
+   `/buscar` only has operación/tipo wired (see above), no neighborhood query param yet. The
+   zone name is shown for context but doesn't actually filter the destination results; a
+   related future enhancement, not a blocker for this iteration.
