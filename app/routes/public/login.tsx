@@ -1,5 +1,4 @@
 import { GoogleLogin } from '@react-oauth/google'
-import { jwtDecode } from 'jwt-decode'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -22,7 +21,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Login() {
   const navigate = useNavigate()
-  const { login, isLoggingIn, loginError, isAuthenticated, setProfile } = useAuth()
+  const { isLoggingIn, loginError, isAuthenticated, handleGoogleCredential } = useAuth()
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -54,25 +53,9 @@ export default function Login() {
               <div className="text-body-sm font-semibold text-ink-600">Iniciando sesión…</div>
             ) : (
               <GoogleLogin
-                onSuccess={(credentialResponse) => {
-                  if (credentialResponse.credential) {
-                    try {
-                      const decoded = jwtDecode<{
-                        name?: string
-                        email?: string
-                        picture?: string
-                      }>(credentialResponse.credential)
-                      setProfile({
-                        name: decoded.name ?? null,
-                        email: decoded.email ?? null,
-                        picture: decoded.picture ?? null,
-                      })
-                    } catch {
-                      // token malformado — el perfil queda en null, no afecta el login
-                    }
-                  }
-                  login({ idToken: credentialResponse.credential ?? null })
-                }}
+                onSuccess={(credentialResponse) =>
+                  handleGoogleCredential(credentialResponse.credential)
+                }
                 onError={() => toast.error('No pudimos iniciar tu sesión. Intenta nuevamente.')}
               />
             )}

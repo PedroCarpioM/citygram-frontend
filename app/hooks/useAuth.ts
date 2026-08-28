@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
+import { jwtDecode } from 'jwt-decode'
 
 import { loginWithGoogle } from '~/services/auth'
 import { useAuthStore } from '~/store/auth'
@@ -19,6 +20,22 @@ export function useAuth() {
     onSuccess: setSession,
   })
 
+  function handleGoogleCredential(credential?: string) {
+    if (credential) {
+      try {
+        const decoded = jwtDecode<{ name?: string; email?: string; picture?: string }>(credential)
+        setProfile({
+          name: decoded.name ?? null,
+          email: decoded.email ?? null,
+          picture: decoded.picture ?? null,
+        })
+      } catch {
+        // token malformado — el perfil queda en null, no afecta el login
+      }
+    }
+    loginMutation.mutate({ idToken: credential ?? null })
+  }
+
   return {
     accessToken,
     userId,
@@ -31,5 +48,6 @@ export function useAuth() {
     loginError: loginMutation.error,
     logout: clearSession,
     setProfile,
+    handleGoogleCredential,
   }
 }
