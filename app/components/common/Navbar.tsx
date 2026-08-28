@@ -21,6 +21,11 @@ export function Navbar() {
       <img src="/images/brand/isologo.jpg" alt="CityGram" className="h-8 w-auto" />
 
       <nav className="hidden items-center gap-6 sm:flex">
+        {NAV_LINKS.map((link) => (
+          <a key={link} href="#" className={linkClasses}>
+            {link}
+          </a>
+        ))}
         {isAuthenticated ? (
           <>
             <Link to={MIS_PUBLICACIONES_PATH} className={linkClasses}>
@@ -34,16 +39,9 @@ export function Navbar() {
             <ProfileMenu />
           </>
         ) : (
-          <>
-            {NAV_LINKS.map((link) => (
-              <a key={link} href="#" className={linkClasses}>
-                {link}
-              </a>
-            ))}
-            <Button variant="primary" size="sm">
-              Pon tu anuncio gratis
-            </Button>
-          </>
+          <Button variant="primary" size="sm">
+            Pon tu anuncio gratis
+          </Button>
         )}
       </nav>
 
@@ -81,6 +79,11 @@ export function Navbar() {
             menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
           }`}
         >
+          {NAV_LINKS.map((link) => (
+            <a key={link} href="#" className={`border-b border-ink-100 py-3 ${linkClasses}`}>
+              {link}
+            </a>
+          ))}
           {isAuthenticated ? (
             <>
               <Link
@@ -99,16 +102,9 @@ export function Navbar() {
               </div>
             </>
           ) : (
-            <>
-              {NAV_LINKS.map((link) => (
-                <a key={link} href="#" className={`border-b border-ink-100 py-3 ${linkClasses}`}>
-                  {link}
-                </a>
-              ))}
-              <Button variant="primary" size="sm" className="mt-4">
-                Pon tu anuncio gratis
-              </Button>
-            </>
+            <Button variant="primary" size="sm" className="mt-4">
+              Pon tu anuncio gratis
+            </Button>
           )}
         </div>
       </div>
