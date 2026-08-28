@@ -1,8 +1,6 @@
-const featureIcons = {
-  beds: '/images/features/dormitorios.jpg',
-  baths: '/images/features/banos.jpg',
-  garages: '/images/features/garage.jpg',
-}
+import { Link } from 'react-router'
+import { featureIcons } from '~/components/property/featureIcons'
+import { PropertyStat } from '~/components/property/PropertyStat'
 
 interface PropertyCardProps {
   image: string
@@ -17,15 +15,8 @@ interface PropertyCardProps {
   onFavorite?: () => void
   favorited?: boolean
   compact?: boolean
-}
-
-function StatInline({ icon, value }: { icon: string; value: number }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900">
-      <img src={icon} alt="" className="h-4 w-4" />
-      {value}
-    </span>
-  )
+  to?: string
+  state?: unknown
 }
 
 export function PropertyCard({
@@ -41,9 +32,11 @@ export function PropertyCard({
   onFavorite,
   favorited,
   compact = false,
+  to,
+  state,
 }: PropertyCardProps) {
   if (compact) {
-    return (
+    const content = (
       <div className="flex w-72 items-center gap-2.5 font-body">
         <img src={image} alt={zone} className="h-14 w-14 flex-shrink-0 rounded-sm object-cover" />
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -54,6 +47,13 @@ export function PropertyCard({
           </div>
         </div>
       </div>
+    )
+    return to ? (
+      <Link to={to} state={state} className="block hover:no-underline">
+        {content}
+      </Link>
+    ) : (
+      content
     )
   }
 
@@ -81,21 +81,31 @@ export function PropertyCard({
           <span className="text-body-sm text-ink-600">{currency}</span>
         </div>
         <div className="flex gap-3.5">
-          <StatInline icon={featureIcons.beds} value={beds} />
-          <StatInline icon={featureIcons.baths} value={baths} />
+          <PropertyStat icon={featureIcons.beds} value={beds} />
+          <PropertyStat icon={featureIcons.baths} value={baths} />
           {garages !== undefined ? (
-            <StatInline icon={featureIcons.garages} value={garages} />
+            <PropertyStat icon={featureIcons.garages} value={garages} />
           ) : null}
         </div>
         {area !== undefined ? (
           <div className="text-body-sm text-ink-600">Sup. {area} m²</div>
         ) : null}
-        <button
-          type="button"
-          className="self-start rounded-md bg-brand-primary px-5 py-2.5 text-sm font-bold text-white"
-        >
-          {ctaLabel}
-        </button>
+        {to ? (
+          <Link
+            to={to}
+            state={state}
+            className="self-start rounded-md bg-brand-primary px-5 py-2.5 text-sm font-bold text-white hover:no-underline hover:brightness-90"
+          >
+            {ctaLabel}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className="self-start rounded-md bg-brand-primary px-5 py-2.5 text-sm font-bold text-white"
+          >
+            {ctaLabel}
+          </button>
+        )}
       </div>
     </div>
   )

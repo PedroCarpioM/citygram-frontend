@@ -45,12 +45,21 @@ export function formatPrice(amount: number, currency?: string | null) {
   return currency ? `${formatted} ${currency}` : formatted
 }
 
+/**
+ * Neither `PublicListingDTO` nor `DetailedPublicListingDTO` expose a dedicated
+ * neighborhood/zone field (see docs/backend_requirements.md), so "zone" is
+ * approximated from the address, falling back to the city.
+ */
+export function pickZone(propertyAddress: string | null, city: string | null): string {
+  return propertyAddress || city || 'Sin dirección'
+}
+
 export function mapPublicListing(dto: PublicListingDTO): PropertyListing {
   return {
     id: dto.id,
     lat: dto.latitude,
     lng: dto.longitude,
-    zone: dto.propertyAddress || dto.city || 'Sin dirección',
+    zone: pickZone(dto.propertyAddress, dto.city),
     image: dto.propertyImages?.[0] ?? PLACEHOLDER_IMAGE,
     price: formatPrice(dto.price, dto.currency),
     priceValue: dto.price,

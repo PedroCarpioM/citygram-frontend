@@ -73,13 +73,15 @@ function ZoomControls() {
 }
 
 export default function PropertyMap({ pins, center, zoom }: PropertyMapProps) {
+  const ids = pins.map((pin) => pin.id)
+
   return (
     <MapContainer center={center} zoom={zoom} zoomControl={false} className="h-full w-full">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {pins.map((pin) => (
+      {pins.map((pin, index) => (
         <Marker key={pin.id} position={[pin.lat, pin.lng]} icon={buildPinIcon(pin)}>
           <Popup minWidth={220} maxWidth={340}>
             <div className="lg:hidden">
@@ -93,6 +95,8 @@ export default function PropertyMap({ pins, center, zoom }: PropertyMapProps) {
                 garages={pin.garages}
                 area={pin.area}
                 currency={pin.currency ?? undefined}
+                to={`/propiedades/${pin.id}`}
+                state={{ ids, index }}
               />
             </div>
             <div className="hidden lg:block">
@@ -105,6 +109,8 @@ export default function PropertyMap({ pins, center, zoom }: PropertyMapProps) {
                 garages={pin.garages}
                 area={pin.area}
                 currency={pin.currency ?? undefined}
+                to={`/propiedades/${pin.id}`}
+                state={{ ids, index }}
               />
             </div>
           </Popup>

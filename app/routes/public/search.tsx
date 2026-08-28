@@ -158,7 +158,9 @@ export default function Search() {
     type: propertyTypeKeyFromLabel(item.propertyType),
   }))
 
-  const listItems = filteredListings.map((item) => ({
+  const listingIds = filteredListings.map((item) => item.id)
+
+  const listItems = filteredListings.map((item, index) => ({
     id: item.id,
     image: item.image,
     zone: item.zone,
@@ -168,6 +170,8 @@ export default function Search() {
     garages: item.garages,
     area: item.area,
     currency: item.currency ?? undefined,
+    to: `/propiedades/${item.id}`,
+    state: { ids: listingIds, index },
   }))
 
   const visibleListItems = listItems.slice(0, visibleCount)
