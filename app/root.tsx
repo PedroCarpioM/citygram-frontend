@@ -1,9 +1,11 @@
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
 import { Toaster } from 'sonner'
 
 import type { Route } from './+types/root'
 import './app.css'
+import { GoogleOneTap } from '~/components/common/GoogleOneTap'
 
 const queryClient = new QueryClient()
 
@@ -41,8 +43,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster richColors position="top-center" />
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''}>
+        <GoogleOneTap />
+        <Outlet />
+        <Toaster richColors position="top-center" />
+      </GoogleOAuthProvider>
     </QueryClientProvider>
   )
 }
