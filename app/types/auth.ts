@@ -14,3 +14,9 @@ export interface UserDTO {
   lastName: string | null
   email: string | null
 }
+
+export interface GoogleProfile {
+  name: string | null
+  email: string | null
+  picture: string | null
+}

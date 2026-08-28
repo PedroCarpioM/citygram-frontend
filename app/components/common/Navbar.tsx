@@ -1,7 +1,11 @@
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router'
 
 import { Button } from '~/components/common/Button'
+import { ProfileMenu } from '~/components/common/ProfileMenu'
+import { useAuth } from '~/hooks/useAuth'
+import { MIS_PUBLICACIONES_PATH, NUEVA_PUBLICACION_PATH } from '~/utils/routes'
 
 const NAV_LINKS = ['Comprar', 'Alquilar', 'Anticretar']
 
@@ -10,20 +14,37 @@ const linkClasses =
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   return (
     <div className="relative flex items-center justify-between border-b border-ink-100 bg-white px-6 py-3.5">
       <img src="/images/brand/isologo.jpg" alt="CityGram" className="h-8 w-auto" />
 
       <nav className="hidden items-center gap-6 sm:flex">
-        {NAV_LINKS.map((link) => (
-          <a key={link} href="#" className={linkClasses}>
-            {link}
-          </a>
-        ))}
-        <Button variant="primary" size="sm">
-          Pon tu anuncio gratis
-        </Button>
+        {isAuthenticated ? (
+          <>
+            <Link to={MIS_PUBLICACIONES_PATH} className={linkClasses}>
+              Mis publicaciones
+            </Link>
+            <Link to={NUEVA_PUBLICACION_PATH}>
+              <Button variant="primary" size="sm">
+                Hacer una publicación
+              </Button>
+            </Link>
+            <ProfileMenu />
+          </>
+        ) : (
+          <>
+            {NAV_LINKS.map((link) => (
+              <a key={link} href="#" className={linkClasses}>
+                {link}
+              </a>
+            ))}
+            <Button variant="primary" size="sm">
+              Pon tu anuncio gratis
+            </Button>
+          </>
+        )}
       </nav>
 
       <button
@@ -60,14 +81,35 @@ export function Navbar() {
             menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
           }`}
         >
-          {NAV_LINKS.map((link) => (
-            <a key={link} href="#" className={`border-b border-ink-100 py-3 ${linkClasses}`}>
-              {link}
-            </a>
-          ))}
-          <Button variant="primary" size="sm" className="mt-4">
-            Pon tu anuncio gratis
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Link
+                to={MIS_PUBLICACIONES_PATH}
+                className={`border-b border-ink-100 py-3 ${linkClasses}`}
+              >
+                Mis publicaciones
+              </Link>
+              <Link to={NUEVA_PUBLICACION_PATH} className="mt-4">
+                <Button variant="primary" size="sm" className="w-full">
+                  Hacer una publicación
+                </Button>
+              </Link>
+              <div className="mt-4 flex justify-end">
+                <ProfileMenu />
+              </div>
+            </>
+          ) : (
+            <>
+              {NAV_LINKS.map((link) => (
+                <a key={link} href="#" className={`border-b border-ink-100 py-3 ${linkClasses}`}>
+                  {link}
+                </a>
+              ))}
+              <Button variant="primary" size="sm" className="mt-4">
+                Pon tu anuncio gratis
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>
