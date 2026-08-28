@@ -63,7 +63,12 @@ export function ProfileMenu() {
         className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-ink-100 bg-ink-50 text-ink-900 transition-colors duration-fast hover:border-pink-500"
       >
         {picture ? (
-          <img src={picture} alt="" className="h-full w-full object-cover" />
+          <img
+            src={picture}
+            alt=""
+            referrerPolicy="no-referrer"
+            className="h-full w-full object-cover"
+          />
         ) : initials ? (
           <span className="text-body-sm font-semibold">{initials}</span>
         ) : (
@@ -80,7 +85,12 @@ export function ProfileMenu() {
         <div className="flex items-center gap-3 px-4 py-3.5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-ink-100 bg-ink-50 text-ink-900">
             {picture ? (
-              <img src={picture} alt="" className="h-full w-full object-cover" />
+              <img
+                src={picture}
+                alt=""
+                referrerPolicy="no-referrer"
+                className="h-full w-full object-cover"
+              />
             ) : initials ? (
               <span className="text-body-sm font-semibold">{initials}</span>
             ) : (
