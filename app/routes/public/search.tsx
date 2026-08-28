@@ -1,27 +1,22 @@
 import leafletCss from 'leaflet/dist/leaflet.css?url'
+import { Filter, List, MapPin } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { Button } from '~/components/common/Button'
 import { SegmentedTabs } from '~/components/common/SegmentedTabs'
-import { Select } from '~/components/common/Select'
 import type { MapPinData } from '~/components/map/PropertyMap'
 import { PropertyMapSkeleton } from '~/components/map/PropertyMapSkeleton'
 import { PropertyCard } from '~/components/property/PropertyCard'
 import { PropertyTypeTile, type PropertyTypeKey } from '~/components/property/PropertyTypeTile'
 import { usePublicListings } from '~/hooks/useListings'
-import {
-  mapPublicListing,
-  matchesOperation,
-  matchesPropertyType,
-  parsePrice,
-} from '~/utils/listing'
+import { mapPublicListing, matchesOperation, matchesPropertyType } from '~/utils/listing'
 import {
   COCHABAMBA_CENTER,
   mockListings,
+  OPERATION_SLUGS,
+  operationFromSlug,
   operationOptions,
-  priceMaxOptions,
-  priceMinOptions,
   propertyTypeData,
 } from './search.data'
 
@@ -56,13 +51,33 @@ export function meta() {
 }
 
 export default function Search() {
-  const [operation, setOperation] = useState(operationOptions[0])
+  const [searchParams, setSearchParams] = useSearchParams()
   const [viewMode, setViewMode] = useState<'mapa' | 'listado'>('mapa')
   const [filtrarOpen, setFiltrarOpen] = useState(false)
-  const [activeType, setActiveType] = useState<PropertyTypeKey | null>(null)
-  const [priceMin, setPriceMin] = useState(priceMinOptions[0])
-  const [priceMax, setPriceMax] = useState(priceMaxOptions[0])
   const mounted = useMounted()
+
+  // Only the filters that still actually filter results (operation, property type) live in
+  // the URL — invalid/unknown values fall back to the defaults instead of breaking the page.
+  const operation = operationFromSlug(searchParams.get('operacion')) ?? operationOptions[0]
+  const typeSlug = searchParams.get('tipo')
+  const activeType = propertyTypeData.some((pt) => pt.type === typeSlug)
+    ? (typeSlug as PropertyTypeKey)
+    : null
+
+  function setOperation(next: string) {
+    const params = new URLSearchParams(searchParams)
+    const slug = OPERATION_SLUGS[next]
+    if (slug) params.set('operacion', slug)
+    else params.delete('operacion')
+    setSearchParams(params, { replace: true, preventScrollReset: true })
+  }
+
+  function setActiveType(next: PropertyTypeKey | null) {
+    const params = new URLSearchParams(searchParams)
+    if (next) params.set('tipo', next)
+    else params.delete('tipo')
+    setSearchParams(params, { replace: true, preventScrollReset: true })
+  }
 
   const listingsQuery = usePublicListings()
 
@@ -81,24 +96,23 @@ export default function Search() {
   // keeps tab/price interactions meaningful in the offline/demo fallback too.
   const sourceListings = listingsQuery.isError ? mockListings : mappedListings
 
-  const priceMinValue = useMemo(() => parsePrice(priceMin), [priceMin])
-  const priceMaxValue = useMemo(() => parsePrice(priceMax), [priceMax])
   const activeTypeLabel = useMemo(
     () => propertyTypeData.find((pt) => pt.type === activeType)?.label ?? null,
     [activeType],
   )
 
+  // TODO(search-price-filter): price filtering is asleep — see the TODO on priceMinOptions/
+  // priceMaxOptions in search.data.ts for why. Re-add a priceValue min/max check here once the
+  // backend confirms PublicListingDTO.price's real format.
   const filteredListings = useMemo(
     () =>
       sourceListings.filter((item) => {
         if (!matchesOperation(item.operationType, operation)) return false
         if (activeTypeLabel && !matchesPropertyType(item.propertyType, activeTypeLabel))
           return false
-        if (priceMinValue !== null && item.priceValue < priceMinValue) return false
-        if (priceMaxValue !== null && item.priceValue > priceMaxValue) return false
         return true
       }),
-    [sourceListings, operation, activeTypeLabel, priceMinValue, priceMaxValue],
+    [sourceListings, operation, activeTypeLabel],
   )
 
   const [visibleCount, setVisibleCount] = useState(LISTADO_PAGE_SIZE)
@@ -161,7 +175,7 @@ export default function Search() {
       type={pt.type}
       label={pt.label}
       active={pt.type === activeType}
-      onClick={() => setActiveType((current) => (current === pt.type ? null : pt.type))}
+      onClick={() => setActiveType(activeType === pt.type ? null : pt.type)}
     />
   ))
 
@@ -176,24 +190,16 @@ export default function Search() {
           ‹ Volver
         </Link>
         <SegmentedTabs options={operationOptions} value={operation} onChange={setOperation} />
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setFiltrarOpen((open) => !open)}
-            className={`flex items-center gap-2 text-sm font-bold ${
-              filtrarOpen ? 'text-brand-primary' : 'text-ink-900'
-            }`}
-          >
-            ☰ FILTRAR
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode((mode) => (mode === 'mapa' ? 'listado' : 'mapa'))}
-            className="flex items-center gap-2 text-sm font-bold text-ink-900"
-          >
-            {viewMode === 'mapa' ? '☰ LISTADO' : '📍 MAPA'}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setFiltrarOpen((open) => !open)}
+          className={`flex items-center gap-2 text-sm font-bold ${
+            filtrarOpen ? 'text-brand-primary' : 'text-ink-900'
+          }`}
+        >
+          <Filter size={16} aria-hidden />
+          FILTRAR
+        </button>
       </div>
 
       {/* Desktop sidebar — progressive enhancement, absent on mobile */}
@@ -211,26 +217,8 @@ export default function Search() {
           </div>
           <div className="grid grid-cols-2 gap-2">{propertyTypeTiles}</div>
         </div>
-        <div className="flex gap-2.5">
-          <div className="flex-1">
-            <Select
-              label="Precio mín."
-              value={priceMin}
-              options={priceMinOptions}
-              onChange={setPriceMin}
-              disabled={listingsQuery.isLoading}
-            />
-          </div>
-          <div className="flex-1">
-            <Select
-              label="Precio máx."
-              value={priceMax}
-              options={priceMaxOptions}
-              onChange={setPriceMax}
-              disabled={listingsQuery.isLoading}
-            />
-          </div>
-        </div>
+        {/* TODO(search-price-filter): price range selects removed here — see the TODO on
+            priceMinOptions/priceMaxOptions in search.data.ts. */}
       </aside>
 
       <div className="relative min-h-0 flex-1">
@@ -275,6 +263,29 @@ export default function Search() {
             {hasMoreListItems ? <div ref={sentinelRef} className="h-1" /> : null}
           </div>
         )}
+
+        {/* View toggle FAB — mobile only; desktop uses the sidebar button instead. Always
+            labels the *destination* view (not the current one) so the action is unambiguous. */}
+        <button
+          type="button"
+          onClick={() => setViewMode((mode) => (mode === 'mapa' ? 'listado' : 'mapa'))}
+          aria-label={
+            viewMode === 'mapa' ? 'Cambiar a vista de listado' : 'Cambiar a vista de mapa'
+          }
+          className="absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink-900 px-5 py-3 text-sm font-bold text-white shadow-elevated transition-colors duration-200 active:scale-[0.97] lg:hidden"
+        >
+          {viewMode === 'mapa' ? (
+            <>
+              <List size={18} aria-hidden />
+              Ver listado
+            </>
+          ) : (
+            <>
+              <MapPin size={18} aria-hidden />
+              Ver mapa
+            </>
+          )}
+        </button>
       </div>
 
       <div className="bg-gradient-brand p-4 text-center font-display text-base font-extrabold text-white lg:hidden">

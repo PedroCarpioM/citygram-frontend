@@ -3,6 +3,22 @@ import { formatPrice, type PropertyListing } from '~/utils/listing'
 
 export const operationOptions = ['Venta', 'Alquiler', 'Anticrético']
 
+/** URL-safe slug for each operation label — labels carry accents/spaces, not valid as-is in a query string. */
+export const OPERATION_SLUGS: Record<string, string> = {
+  Venta: 'venta',
+  Alquiler: 'alquiler',
+  Anticrético: 'anticretico',
+}
+
+const OPERATION_LABELS_BY_SLUG: Record<string, string> = Object.fromEntries(
+  Object.entries(OPERATION_SLUGS).map(([label, slug]) => [slug, label]),
+)
+
+export function operationFromSlug(slug: string | null): string | null {
+  if (!slug) return null
+  return OPERATION_LABELS_BY_SLUG[slug] ?? null
+}
+
 export const propertyTypeData: { type: PropertyTypeKey; label: string }[] = [
   { type: 'vivienda', label: 'Casa' },
   { type: 'departamento', label: 'Departamento' },
@@ -12,6 +28,9 @@ export const propertyTypeData: { type: PropertyTypeKey; label: string }[] = [
   { type: 'hotel', label: 'Hotel' },
 ]
 
+// TODO(search-price-filter): kept ready but unused — price filtering is asleep until the
+// backend confirms PublicListingDTO.price's real format (see docs/backend_requirements.md,
+// "Still open" #2: sample payload had a malformed "500.023,00," value).
 export const priceMinOptions = ['Mín.', '50.000', '100.000', '200.000', '400.000']
 export const priceMaxOptions = ['Máx.', '200.000', '400.000', '600.000', '1.000.000']
 
