@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 
 import type { Route } from './+types/root'
 import './app.css'
+import { GoogleOneTap } from '~/components/common/GoogleOneTap'
 
 const queryClient = new QueryClient()
 
@@ -43,6 +44,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''}>
+        <GoogleOneTap />
         <Outlet />
         <Toaster richColors position="top-center" />
       </GoogleOAuthProvider>
