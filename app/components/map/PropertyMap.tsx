@@ -15,6 +15,7 @@ export interface MapPinData {
   baths: number
   garages?: number
   area?: number
+  currency?: string | null
   image: string
   size: 'sm' | 'md'
 }
@@ -89,6 +90,7 @@ export default function PropertyMap({ pins, center, zoom }: PropertyMapProps) {
                 baths={pin.baths}
                 garages={pin.garages}
                 area={pin.area}
+                currency={pin.currency ?? undefined}
               />
             </div>
             <div className="hidden lg:block">
@@ -100,6 +102,7 @@ export default function PropertyMap({ pins, center, zoom }: PropertyMapProps) {
                 baths={pin.baths}
                 garages={pin.garages}
                 area={pin.area}
+                currency={pin.currency ?? undefined}
               />
             </div>
           </Popup>

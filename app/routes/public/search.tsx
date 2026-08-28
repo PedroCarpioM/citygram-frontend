@@ -1,5 +1,5 @@
 import leafletCss from 'leaflet/dist/leaflet.css?url'
-import { lazy, Suspense, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Button } from '~/components/common/Button'
@@ -10,7 +10,12 @@ import { PropertyMapSkeleton } from '~/components/map/PropertyMapSkeleton'
 import { PropertyCard } from '~/components/property/PropertyCard'
 import { PropertyTypeTile, type PropertyTypeKey } from '~/components/property/PropertyTypeTile'
 import { usePublicListings } from '~/hooks/useListings'
-import { mapPublicListing, matchesOperation, parsePrice } from '~/utils/listing'
+import {
+  mapPublicListing,
+  matchesOperation,
+  matchesPropertyType,
+  parsePrice,
+} from '~/utils/listing'
 import {
   COCHABAMBA_CENTER,
   mockListings,
@@ -21,6 +26,7 @@ import {
 } from './search.data'
 
 const PropertyMap = lazy(() => import('~/components/map/PropertyMap'))
+const LISTADO_PAGE_SIZE = 12
 
 function subscribeNoop() {
   return () => {}
@@ -53,7 +59,7 @@ export default function Search() {
   const [operation, setOperation] = useState(operationOptions[0])
   const [viewMode, setViewMode] = useState<'mapa' | 'listado'>('mapa')
   const [filtrarOpen, setFiltrarOpen] = useState(false)
-  const [activeType, setActiveType] = useState<PropertyTypeKey>('vivienda')
+  const [activeType, setActiveType] = useState<PropertyTypeKey | null>(null)
   const [priceMin, setPriceMin] = useState(priceMinOptions[0])
   const [priceMax, setPriceMax] = useState(priceMaxOptions[0])
   const mounted = useMounted()
@@ -77,19 +83,44 @@ export default function Search() {
 
   const priceMinValue = useMemo(() => parsePrice(priceMin), [priceMin])
   const priceMaxValue = useMemo(() => parsePrice(priceMax), [priceMax])
+  const activeTypeLabel = useMemo(
+    () => propertyTypeData.find((pt) => pt.type === activeType)?.label ?? null,
+    [activeType],
+  )
 
   const filteredListings = useMemo(
     () =>
       sourceListings.filter((item) => {
         if (!matchesOperation(item.operationType, operation)) return false
-        if (priceMinValue !== null && (item.priceValue === null || item.priceValue < priceMinValue))
+        if (activeTypeLabel && !matchesPropertyType(item.propertyType, activeTypeLabel))
           return false
-        if (priceMaxValue !== null && (item.priceValue === null || item.priceValue > priceMaxValue))
-          return false
+        if (priceMinValue !== null && item.priceValue < priceMinValue) return false
+        if (priceMaxValue !== null && item.priceValue > priceMaxValue) return false
         return true
       }),
-    [sourceListings, operation, priceMinValue, priceMaxValue],
+    [sourceListings, operation, activeTypeLabel, priceMinValue, priceMaxValue],
   )
+
+  const [visibleCount, setVisibleCount] = useState(LISTADO_PAGE_SIZE)
+  const [prevFilteredListings, setPrevFilteredListings] = useState(filteredListings)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  if (filteredListings !== prevFilteredListings) {
+    setPrevFilteredListings(filteredListings)
+    setVisibleCount(LISTADO_PAGE_SIZE)
+  }
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        setVisibleCount((count) => count + LISTADO_PAGE_SIZE)
+      }
+    })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [viewMode, filteredListings, visibleCount])
 
   const pins: MapPinData[] = filteredListings.map((item) => ({
     id: item.id,
@@ -97,11 +128,12 @@ export default function Search() {
     lng: item.lng,
     zone: item.zone,
     price: item.price,
-    priceNum: item.priceValue ?? 0,
+    priceNum: item.priceValue,
     beds: item.beds,
     baths: item.baths,
     garages: item.garages,
     area: item.area,
+    currency: item.currency,
     image: item.image,
     size: item.size ?? 'md',
   }))
@@ -115,7 +147,11 @@ export default function Search() {
     baths: item.baths,
     garages: item.garages,
     area: item.area,
+    currency: item.currency ?? undefined,
   }))
+
+  const visibleListItems = listItems.slice(0, visibleCount)
+  const hasMoreListItems = visibleCount < listItems.length
 
   const resultsCountLabel = `${listItems.length} anuncios en ${operation.toLowerCase()}`
 
@@ -125,7 +161,7 @@ export default function Search() {
       type={pt.type}
       label={pt.label}
       active={pt.type === activeType}
-      onClick={() => setActiveType(pt.type)}
+      onClick={() => setActiveType((current) => (current === pt.type ? null : pt.type))}
     />
   ))
 
@@ -232,10 +268,11 @@ export default function Search() {
           <div className="h-full overflow-y-auto bg-ink-50 p-4 lg:p-6">
             <div className="mb-4 text-sm font-semibold text-ink-600">{resultsCountLabel}</div>
             <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] lg:gap-5">
-              {listItems.map(({ id, ...item }) => (
+              {visibleListItems.map(({ id, ...item }) => (
                 <PropertyCard key={id} {...item} />
               ))}
             </div>
+            {hasMoreListItems ? <div ref={sentinelRef} className="h-1" /> : null}
           </div>
         )}
       </div>
