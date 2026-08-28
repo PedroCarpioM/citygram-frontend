@@ -1,3 +1,4 @@
+import type { PropertyTypeKey } from '~/components/property/PropertyTypeTile'
 import type { PublicListingDTO } from '~/types/listing'
 
 export interface PropertyListing {
@@ -97,4 +98,28 @@ export function matchesOperation(operationType: string | null, selected: string)
 export function matchesPropertyType(propertyType: string | null, selected: string): boolean {
   if (!propertyType) return false
   return normalizeText(propertyType) === normalizeText(selected)
+}
+
+/**
+ * Accent/case-insensitive labels for each `PropertyTypeKey`, mirroring
+ * `propertyTypeData` in search.data.ts. Kept here (rather than imported) so
+ * this util doesn't depend on a route-local data file.
+ */
+const PROPERTY_TYPE_LABELS: Record<PropertyTypeKey, string> = {
+  vivienda: 'Casa',
+  departamento: 'Departamento',
+  terreno: 'Terreno',
+  local: 'Local',
+  oficina: 'Oficina',
+  hotel: 'Hotel',
+}
+
+/** Normalizes a listing's free-text `propertyType` into a `PropertyTypeKey`, or null if unmatched. */
+export function propertyTypeKeyFromLabel(propertyType: string | null): PropertyTypeKey | null {
+  if (!propertyType) return null
+  const normalized = normalizeText(propertyType)
+  const entry = Object.entries(PROPERTY_TYPE_LABELS).find(
+    ([, label]) => normalizeText(label) === normalized,
+  )
+  return (entry?.[0] as PropertyTypeKey) ?? null
 }

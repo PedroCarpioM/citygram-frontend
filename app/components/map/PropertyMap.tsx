@@ -1,6 +1,7 @@
 import L from 'leaflet'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import type { PropertyTypeKey } from '~/components/property/PropertyTypeTile'
 import { PropertyCard } from '~/components/property/PropertyCard'
 import { MapPin } from './MapPin'
 
@@ -18,6 +19,7 @@ export interface MapPinData {
   currency?: string | null
   image: string
   size: 'sm' | 'md'
+  type: PropertyTypeKey | null
 }
 
 interface PropertyMapProps {
@@ -29,13 +31,13 @@ interface PropertyMapProps {
 const pinIconCache = new Map<string, L.DivIcon>()
 
 function buildPinIcon(pin: MapPinData) {
-  const cacheKey = `${pin.id}-${pin.size}-${pin.price}`
+  const cacheKey = `${pin.id}-${pin.size}-${pin.price}-${pin.type}`
   const cached = pinIconCache.get(cacheKey)
   if (cached) return cached
 
   const dim = pin.size === 'sm' ? 34 : 44
   const labelHeight = 24
-  const html = renderToStaticMarkup(<MapPin price={pin.price} size={pin.size} />)
+  const html = renderToStaticMarkup(<MapPin price={pin.price} size={pin.size} type={pin.type} />)
   const icon = L.divIcon({
     html,
     className: '',
